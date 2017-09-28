@@ -28,8 +28,6 @@ namespace WoWFormatLib.Structs.M2
         public int[] skinFileDataIDs;
         public int[] lod_skinFileDataIDs;
         public AFID[] animFileData;
-
-        public string filename;
         public string name;
         public GlobalModelFlags flags;
         public Sequence[] sequences;
