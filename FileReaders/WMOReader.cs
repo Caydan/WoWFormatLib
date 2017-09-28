@@ -28,25 +28,13 @@ namespace WoWFormatLib.FileReaders
         public WMO wmofile;
         private bool _lod;
 
-        public void LoadWMO(string filename, bool lod = false)
+        public void LoadWMO(Stream fileStream, bool lod = false)
         {
-            _lod = lod;
-
-            if (CASC.cascHandler.FileExists(filename))
-            {
-                using (Stream wmoStream = CASC.cascHandler.OpenFile(filename))
-                {
-                    ReadWMO(filename, wmoStream);
-                }
-            }
-            else
-            {
-                throw new FileNotFoundException("File " + filename + " was not found");
-            }
+            ReadWMO(fileStream);
         }
 
         /* PARENT */
-        private void ReadWMO(string filename, Stream wmo)
+        private void ReadWMO(Stream wmo)
         {
             using (var bin = new BinaryReader(wmo))
             {
@@ -66,11 +54,11 @@ namespace WoWFormatLib.FileReaders
                             wmofile.version = bin.Read<MVER>();
                             if (wmofile.version.version != 17)
                             {
-                                throw new Exception("Unsupported WMO version! (" + wmofile.version.version + ") (" + filename + ")");
+                                throw new Exception("Unsupported WMO version! (" + wmofile.version.version + ")");
                             }
                             break;
                         case "MOHD":
-                            wmofile.header = ReadMOHDChunk(bin, filename);
+                            wmofile.header = ReadMOHDChunk(bin);
                             break;
                         case "MOTX":
                             wmofile.textures = ReadMOTXChunk(chunkSize, bin);
@@ -106,11 +94,13 @@ namespace WoWFormatLib.FileReaders
                         case "GFID": // Legion
                             break;
                         default:
-                            throw new Exception(String.Format("{2} Found unknown header at offset {1} \"{0}\" while we should've already read them all!", chunkName, position.ToString(), filename));
+                            throw new Exception(String.Format("Found unknown header at offset {1} \"{0}\" while we should've already read them all!", chunkName, position.ToString()));
                     }
                 }
             }
 
+            /* @TODO use GFID */
+            /*
             WMOGroupFile[] groupFiles = new WMOGroupFile[wmofile.header.nGroups];
             for (int i = 0; i < wmofile.header.nGroups; i++)
             {
@@ -144,8 +134,9 @@ namespace WoWFormatLib.FileReaders
             }
 
             wmofile.group = groupFiles;
+            */
         }
-        private MOHD ReadMOHDChunk(BinaryReader bin, string filename)
+        private MOHD ReadMOHDChunk(BinaryReader bin)
         {
             //Header for the map object. 64 bytes.
             var header = new MOHD()
@@ -318,7 +309,7 @@ namespace WoWFormatLib.FileReaders
         }
 
         /* GROUP */
-        private WMOGroupFile ReadWMOGroupFile(string filename, Stream wmo)
+            private WMOGroupFile ReadWMOGroupFile(string filename, Stream wmo)
         {
             WMOGroupFile groupFile = new WMOGroupFile();
 

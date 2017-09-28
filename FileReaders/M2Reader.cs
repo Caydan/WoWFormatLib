@@ -14,9 +14,7 @@
   0. You just DO WHAT THE FUCK YOU WANT TO.
 */
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using WoWFormatLib.Structs.M2;
 using WoWFormatLib.Utils;
 
@@ -26,21 +24,8 @@ namespace WoWFormatLib.FileReaders
     {
         public M2Model model;
 
-        public void LoadM2(string filename)
+        public void LoadM2(Stream m2)
         {
-            if (CASC.cascHandler.FileExists(filename))
-            {
-                LoadM2(CASC.getFileDataIdByName(Path.ChangeExtension(filename, "M2")));
-            }
-            else
-            {
-                throw new FileNotFoundException("M2 " + filename + " not found");
-            }
-        }
-
-        public void LoadM2(int fileDataID)
-        {
-            Stream m2 = CASC.cascHandler.OpenFile(fileDataID);
             var bin = new BinaryReader(m2);
             long position = 0;
             while (position < m2.Length)
@@ -97,7 +82,7 @@ namespace WoWFormatLib.FileReaders
                     case "SKID":
                         break;
                     default:
-                        throw new Exception(String.Format("{2} Found unknown header at offset {1} \"{0}\"", chunkName, position.ToString(), "id: " + fileDataID));
+                        throw new Exception(String.Format("{2} Found unknown header at offset {1} \"{0}\"", chunkName, position.ToString()));
                 }
             }
 
@@ -434,9 +419,10 @@ namespace WoWFormatLib.FileReaders
             var skins = new Structs.SKIN.SKIN[skinFileDataIDs.Length];
             for (int i = 0; i < skinFileDataIDs.Length; i++)
             {
-                SKINReader skinreader = new SKINReader();
-                skinreader.LoadSKIN(skinFileDataIDs[i]);
-                skins[i] = skinreader.skin;
+                // @TODO skin reading
+                //SKINReader skinreader = new SKINReader();
+                //skinreader.LoadSKIN(skinFileDataIDs[i]);
+                //skins[i] = skinreader.skin;
             }
             return skins;
         }
@@ -480,10 +466,6 @@ namespace WoWFormatLib.FileReaders
                     if (!filename.Equals(""))
                     {
                         textures[i].filename = filename;
-                        if (!CASC.cascHandler.FileExists(filename))
-                        {
-                            Console.WriteLine("BLP file does not exist!!! {0}", filename);
-                        }
                     }
                     else
                     {

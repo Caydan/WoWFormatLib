@@ -2,26 +2,16 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using WoWFormatLib.Utils;
 
 namespace WoWFormatLib.FileReaders
 {
     public class WDLReader
     {
-        public void LoadWDL(string filename)
+        public void LoadWDL(Stream fileStream)
         {
-            if (CASC.cascHandler.FileExists(filename))
-            {
-                using (Stream tex = CASC.cascHandler.OpenFile(filename))
-                {
-                    ReadWDL(filename, tex);
-                }
-            }
-            else
-            {
-                throw new FileNotFoundException("WDL " + filename + " does not exist");
-            }
+            ReadWDL(fileStream);
         }
+
         private void ReadMVERChunk(BinaryReader bin)
         {
             if (bin.ReadUInt32() != 18)
@@ -39,13 +29,6 @@ namespace WoWFormatLib.FileReaders
             {
                 if (wmoFilesChunk[i] == '\0')
                 {
-                    if (str.Length > 1)
-                    {
-                        if (!CASC.cascHandler.FileExists(str.ToString()))
-                        {
-                            Console.WriteLine("WMO file does not exist!!! {0}", str.ToString());
-                        }
-                    }
                     str = new StringBuilder();
                 }
                 else
@@ -54,7 +37,7 @@ namespace WoWFormatLib.FileReaders
                 }
             }
         }
-        private void ReadWDL(string filename, Stream wdl)
+        private void ReadWDL(Stream wdl)
         {
             var bin = new BinaryReader(wdl);
             long position = 0;
@@ -80,7 +63,7 @@ namespace WoWFormatLib.FileReaders
                     case "MAOC": //New in WoD
                     case "MAHO": continue;
                     default:
-                        throw new Exception(String.Format("{2} Found unknown header at offset {1} \"{0}\" while we should've already read them all!", chunkName, position.ToString(), filename));
+                        throw new Exception(String.Format("Found unknown header at offset {1} \"{0}\" while we should've already read them all!", chunkName, position.ToString()));
                 }
             }
         }

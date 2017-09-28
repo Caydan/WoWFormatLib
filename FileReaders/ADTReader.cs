@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using WoWFormatLib.Structs.ADT;
-using WoWFormatLib.Utils;
 
 namespace WoWFormatLib.FileReaders
 {
@@ -17,32 +16,12 @@ namespace WoWFormatLib.FileReaders
         private Structs.WDT.WDT wdt;
 
         /* ROOT */
-        public void LoadADT(string filename, bool loadSecondaryADTs = true)
+        public void LoadADT(Stream adt)
         {
             m2Files = new List<string>();
             wmoFiles = new List<string>();
             blpFiles = new List<string>();
 
-            filename = Path.ChangeExtension(filename, ".adt");
-
-            if (!CASC.cascHandler.FileExists(filename) || !CASC.cascHandler.FileExists(filename.Replace(".adt", "_obj0.adt")) || !CASC.cascHandler.FileExists(filename.Replace(".adt", "_tex0.adt"))) {
-                throw new FileNotFoundException("One or more ADT files for ADT " + filename + " could not be found.");
-            }
-
-            var mapname = filename.Replace("world\\maps\\", "").Substring(0, filename.Replace("world\\maps\\", "").IndexOf("\\"));
-
-            if (CASC.cascHandler.FileExists("world\\maps\\" + mapname + "\\" + mapname + ".wdt"))
-            {
-                var wdtr = new WDTReader();
-                wdtr.LoadWDT("world\\maps\\" + mapname + "\\" + mapname + ".wdt");
-                wdt = wdtr.wdtfile;
-            }
-            else
-            {
-                throw new Exception("WDT does not exist, need this for MCAL flags!");
-            }
-
-            using (var adt = CASC.cascHandler.OpenFile(filename))
             using (var bin = new BinaryReader(adt))
             {
                 long position = 0;
@@ -87,21 +66,8 @@ namespace WoWFormatLib.FileReaders
                         case "MBNV":
                             break;
                         default:
-                            throw new Exception(String.Format("{2} Found unknown header at offset {1} \"{0}\" while we should've already read them all!", chunkName, position, filename));
+                            throw new Exception(String.Format("Found unknown header at offset {1} \"{0}\" while we should've already read them all!", chunkName, position));
                     }
-                }
-            }
-            
-            if (loadSecondaryADTs)
-            {
-                using (var adtobj0 = CASC.cascHandler.OpenFile(filename.Replace(".adt", "_obj0.adt")))
-                {
-                    ReadObjFile(adtobj0);
-                }
-
-                using (var adttex0 = CASC.cascHandler.OpenFile(filename.Replace(".adt", "_tex0.adt")))
-                {
-                    ReadTexFile(adttex0);
                 }
             }
         }
@@ -478,10 +444,6 @@ namespace WoWFormatLib.FileReaders
                 if (blpFilesChunk[i] == '\0')
                 {
                     blpFiles.Add(str.ToString());
-                    if (!CASC.cascHandler.FileExists(str.ToString()))
-                    {
-                        Console.WriteLine("BLP file does not exist!!! {0}", str.ToString());
-                    }
                     str = new StringBuilder();
                 }
                 else

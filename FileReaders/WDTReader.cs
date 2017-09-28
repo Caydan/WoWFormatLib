@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using WoWFormatLib.Utils;
 using WoWFormatLib.Structs.WDT;
 using System.Linq;
 
@@ -18,22 +17,12 @@ namespace WoWFormatLib.FileReaders
             return tiles;
         }
 
-        public void LoadWDT(string filename)
+        public void LoadWDT(Stream fileStream)
         {
-            tiles = new List<int[]>();
-            if (CASC.cascHandler.FileExists(filename))
-            {
-                using (Stream tex = CASC.cascHandler.OpenFile(filename))
-                {
-                    ReadWDT(filename, tex);
-                }
-            }
-            else
-            {
-                throw new FileNotFoundException("WDT " + filename + " does not exist");
-            }
+            ReadWDT(fileStream);
         }
-        private void ReadMAINChunk(BinaryReader bin, uint size, String filename)
+
+        private void ReadMAINChunk(BinaryReader bin, uint size)
         {
             if (size != 4096 * 8)
             {
@@ -48,7 +37,6 @@ namespace WoWFormatLib.FileReaders
                     var nobodycares = bin.ReadUInt32();
                     if (flags == 1)
                     {
-                        var adtfilename = filename.Replace(".WDT", "_" + y + "_" + x + ".adt");
                         int[] xy = new int[] { y, x };
                         tiles.Add(xy);
                     }
@@ -89,9 +77,8 @@ namespace WoWFormatLib.FileReaders
             };
             return mphd;
         }
-        private void ReadWDT(string filename, Stream wdt)
+        private void ReadWDT(Stream wdt)
         {
-            filename = Path.ChangeExtension(filename, "WDT");
             var bin = new BinaryReader(wdt);
             long position = 0;
             while (position < wdt.Length)
@@ -109,7 +96,7 @@ namespace WoWFormatLib.FileReaders
                         ReadMVERChunk(bin);
                         break;
                     case "MAIN":
-                        ReadMAINChunk(bin, chunkSize, filename);
+                        ReadMAINChunk(bin, chunkSize);
                         break;
                     case "MWMO":
                         ReadMWMOChunk(bin);
@@ -121,7 +108,7 @@ namespace WoWFormatLib.FileReaders
                     case "MODF":
                         continue;
                     default:
-                        throw new Exception(String.Format("{2} Found unknown header at offset {1} \"{0}\" while we should've already read them all!", chunkName, position.ToString(), filename));
+                        throw new Exception(String.Format("Found unknown header at offset {1} \"{0}\" while we should've already read them all!", chunkName, position.ToString()));
                 }
             }
         }
