@@ -313,7 +313,7 @@ namespace WoWFormatLib.FileReaders
         }
 
         /* GROUP */
-            private WMOGroupFile ReadWMOGroupFile(string filename, Stream wmo)
+        public WMOGroupFile ReadWMOGroupFile(Stream wmo)
         {
             WMOGroupFile groupFile = new WMOGroupFile();
 
