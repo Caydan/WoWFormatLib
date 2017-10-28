@@ -327,7 +327,7 @@ namespace WoWFormatLib.FileReaders
                     {
                         case "MVER":
                             groupFile.version = bin.Read<MVER>();
-                            if (wmofile.version.version != 17)
+                            if (groupFile.version.version != 17)
                             {
                                 throw new Exception("Unsupported WMO version! (" + wmofile.version.version + ")");
                             }
@@ -336,7 +336,7 @@ namespace WoWFormatLib.FileReaders
                             groupFile.mogp = ReadMOGPChunk(chunkSize, bin);
                             continue;
                         default:
-                            throw new Exception(String.Format("{2} Found unknown header at offset {1} \"{0}\" while we should've already read them all!", chunkName, position.ToString(), filename));
+                            throw new Exception(String.Format("{2} Found unknown header at offset {1} \"{0}\" while we should've already read them all!", chunkName, position.ToString()));
                     }
                 }
             }
@@ -427,6 +427,7 @@ namespace WoWFormatLib.FileReaders
                         case "MOPL": //Unknown
                         case "MOLP": //Unknown
                         case "MOLS": //Unknown
+                        case "MOPB": //Unknown
                             continue;
                         default:
                             throw new Exception(String.Format("Found unknown header at offset {1} \"{0}\" while we should've already read them all!", subChunkName, position.ToString()));
