@@ -73,16 +73,24 @@ namespace WoWFormatLib.FileReaders
                     case "PFID": // Phys file IDs
                         model.physFileID = (int)bin.ReadUInt32();
                         break;
+                    case "SKID":
+                        model.skelFileID = (int)bin.ReadUInt32();
+                        break;
                     case "TXAC":
                     case "EXPT":
                     case "EXP2":
+                    case "PABC":
                     case "PADC":
                     case "PSBC":
                     case "PEDC":
-                    case "SKID":
                         break;
                     default:
+#if DEBUG
                         throw new Exception(String.Format("{2} Found unknown header at offset {1} \"{0}\"", chunkName, position.ToString()));
+#else
+                        Console.WriteLine(String.Format("{2} Found unknown header at offset {1} \"{0}\"", chunkName, position.ToString()));
+                        break;
+#endif
                 }
             }
 
